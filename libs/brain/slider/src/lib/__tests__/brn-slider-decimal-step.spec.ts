@@ -77,7 +77,15 @@ describe('BrnSlider with a decimal step', () => {
 		// String(0.0000001) is '1e-7'.
 		const { ticks } = await setup({ max: 0.000001, step: 0.0000001 });
 
-		expect(new Set(ticks()).size).toBe(11);
+		expect(ticks()).toEqual(['0', '1e-7', '2e-7', '3e-7', '4e-7', '5e-7', '6e-7', '7e-7', '8e-7', '9e-7', '0.000001']);
+	});
+
+	it('keeps the ticks of a step too small to round by', async () => {
+		// 1e-309 has 309 decimal places, and 10 ** 309 is Infinity.
+		const { ticks } = await setup({ max: 1e-308, step: 1e-309 });
+
+		expect(ticks()).not.toContain('NaN');
+		expect(new Set(ticks()).size).toBe(ticks().length);
 	});
 
 	it('lets a thumb come exactly minStepsBetweenThumbs steps from its neighbour', async () => {
