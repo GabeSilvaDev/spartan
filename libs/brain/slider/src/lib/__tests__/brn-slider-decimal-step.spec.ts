@@ -88,6 +88,13 @@ describe('BrnSlider with a decimal step', () => {
 		expect(new Set(ticks()).size).toBe(ticks().length);
 	});
 
+	it('keeps a tick whose value overflows when it is scaled to round', async () => {
+		// 1e100 * 10 ** 250 is Infinity.
+		const { ticks } = await setup({ min: 1e100, max: 1e100, step: 1e-250 });
+
+		expect(ticks()).toEqual(['1e+100']);
+	});
+
 	it('lets a thumb come exactly minStepsBetweenThumbs steps from its neighbour', async () => {
 		// 0.7 - 0.4 is 0.29999999999999993.
 		const { fixture, thumbs } = await setup();

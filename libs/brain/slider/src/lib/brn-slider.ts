@@ -418,9 +418,11 @@ const GAP_TOLERANCE = 1e-9;
 
 function roundValue(value: number, decimalCount: number): number {
 	const rounder = Math.pow(10, decimalCount);
-	// Past about 308 places the rounder is Infinity, and the value has no error worth removing.
-	if (!Number.isFinite(rounder)) return value;
-	return Math.round(value * rounder) / rounder;
+	const scaled = value * rounder;
+	// Past about 308 places, or once the value scaled to them overflows, there is no error worth
+	// removing: the rounder or the scaled value is Infinity.
+	if (!Number.isFinite(scaled)) return value;
+	return Math.round(scaled) / rounder;
 }
 
 function getDecimalCount(value: number): number {
