@@ -219,8 +219,8 @@ export class BrnSlider implements ControlValueAccessor, OnInit {
 		}
 
 		const totalCount = Math.floor((max - min) / step) + 1;
-		// Rounded like `setValue`, so a step of 0.1 gives 0.3 rather than 0.30000000000000004.
 		const decimalCount = Math.max(getDecimalCount(min), getDecimalCount(step));
+		/** The `i`th tick, rounded like `setValue`: a step of 0.1 gives 0.3, not 0.30000000000000004. */
 		const tickAt = (i: number) => roundValue(min + i * step, decimalCount);
 
 		// No need to reduce
@@ -306,9 +306,11 @@ export class BrnSlider implements ControlValueAccessor, OnInit {
 		const gapTolerance = this.step() * GAP_TOLERANCE;
 
 		if (this.preventStepOverThumb() && currentValue.length > 1) {
-			// A neighbour plus the minimum gap, without the floating point error of the sum
-			// (0.2 + 3 * 0.1 is 0.5000000000000001): it has no more digits than both together.
 			const gapDecimalCount = decimalCount + getDecimalCount(this.minStepsBetweenThumbs());
+			/**
+			 * A neighbour plus a gap, without the floating point error of the sum
+			 * (0.3 + 3 * 0.1 is 0.6000000000000001): it has no more digits than both together.
+			 */
 			const besideNeighbour = (neighbour: number, gap: number) =>
 				roundValue(neighbour + gap, Math.max(getDecimalCount(neighbour), gapDecimalCount));
 			const lowerBound =
@@ -416,17 +418,20 @@ function areArrsEqual(arr1: unknown[], arr2: unknown[]): boolean {
 /** A fraction of a step: far above floating point error, far below any gap a step can make. */
 const GAP_TOLERANCE = 1e-9;
 
+/**
+ * `value` rounded to `decimalCount` decimal places. Past about 308 places, or once the value scaled
+ * to them overflows, the rounder or the scaled value is Infinity and there is no error worth
+ * removing, so the value comes back as it is.
+ */
 function roundValue(value: number, decimalCount: number): number {
 	const rounder = Math.pow(10, decimalCount);
 	const scaled = value * rounder;
-	// Past about 308 places, or once the value scaled to them overflows, there is no error worth
-	// removing: the rounder or the scaled value is Infinity.
 	if (!Number.isFinite(scaled)) return value;
 	return Math.round(scaled) / rounder;
 }
 
+/** The decimal places `value` is written with. `String(0.0000001)` is `'1e-7'`, which has 7. */
 function getDecimalCount(value: number): number {
-	// `String(0.0000001)` is `'1e-7'`: the exponent counts as decimal places too.
 	const [mantissa, exponent = '0'] = String(value).toLowerCase().split('e');
 	return Math.max(0, (mantissa.split('.')[1] || '').length - Number(exponent));
 }
