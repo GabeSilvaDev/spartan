@@ -52,6 +52,7 @@ type SliderInputs = Partial<{
 	initialValue: number[];
 }>;
 
+/** Renders the slider with `inputs`, and returns its thumbs and a reader for its tick labels. */
 async function setup(inputs: SliderInputs = {}) {
 	const { fixture, container, getAllByTestId } = await render(DecimalStepSlider, { inputs });
 	await fixture.whenStable();
@@ -59,6 +60,7 @@ async function setup(inputs: SliderInputs = {}) {
 	return { fixture, thumbs, ticks: () => getAllByTestId('tick').map((tick) => tick.textContent?.trim()) };
 }
 
+/** Presses `key` on `thumb` `times` times, then waits for the slider to settle. */
 async function press(fixture: { whenStable(): Promise<unknown> }, thumb: HTMLElement, key: string, times: number) {
 	for (let i = 0; i < times; i++) {
 		fireEvent.keyDown(thumb, { key });
